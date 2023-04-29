@@ -5,11 +5,21 @@ import Router from "./routes/Router";
 
 
 function App() {
-  const [userInfo, setUserInfo] = useState({name: "", email: "", password: ""})
-  const [login, setLogin] = useState({email: "", password: ""})
-  const [post, setPost] = useState([])
+    const [users, setUsers] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const [comments, setComments] = useState([]);
+    const [isAuth, setIsAuth] = useState(false);
+    const context = {
+      users,
+      setUsers,
+      posts,
+      setPosts,
+      comments,
+      setComments,
+      isAuth,
+      setIsAuth,
+    };
 
-  const context = {}
   return (
     <GlobalContext.Provider value={context}>
       <ChakraProvider>
