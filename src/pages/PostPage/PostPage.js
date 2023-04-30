@@ -1,53 +1,60 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Header } from '../../components/Header/Header'
 import { Button, Comments, Container, DivHr, TextArea } from './style'
 import axios from 'axios';
 import { BASE_URL } from '../../constants/url';
-import arrowUp from '../../assets/arrow-up.svg'
-import arrowDown from '../../assets/arrow-down.svg'
-import { Author, DivLike, PostText } from '../../components/Card/style';
+import { useParams } from 'react-router-dom';
+import { CardComment } from '../../components/Card/CardComment';
 
-export const PostPage = (props) => {
-    const { comment, findComments } = props;
+export const PostPage = () => {
+  const [content, setContent] = useState("");
+  const [comments, setComments] = useState();
 
-  const like = async (postId) => {
+  const params = useParams();
+
+  useEffect(() => {
+    fetchComments()
+  }, []);
+
+  const fetchComments = async () => {
     try {
-      let body = {
-        like: 1,
-      };
-      await axios.put(`${BASE_URL}/posts/${postId}/like`, body, {
+      const response = await axios.get(
+        `${BASE_URL}/comments/${params.id}`, {
         headers: {
-          Authorization: window.localStorage.getItem("labeddit-token"),
+          Authorization: window.localStorage.getItem("token"),
         },
       });
-      findComments();
+      setComments(response.data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const dislike = async (postId) => {
+  const createComment = async () => {
     try {
       let body = {
-        like: 0,
+        content,
       };
-      await axios.put(`${BASE_URL}/posts/${postId}/like`, body, {
+      await axios.post(`${BASE_URL}/comments/${params.id}`, body, {
         headers: {
-          Authorization: window.localStorage.getItem("labeddit-token"),
+          Authorization: window.localStorage.getItem("token"),
         },
       });
-      findComments();
+      fetchComments();
+      setContent("");
+      console.log(comments);
     } catch (error) {
       console.log(error);
     }
   };
+
   return (
     <>
         <Header/>
-
         <Container>
-            <TextArea placeholder='Adicionar comentário'></TextArea>
-            <Button>Responder</Button>
+            <TextArea placeholder='Adicionar comentário' value={content}
+              onChange={(e) => setContent(e.target.value)}></TextArea>
+            <Button type="submit" onClick={() => createComment(params.id)}>Responder</Button>
         </Container>
         
         <DivHr>
@@ -55,14 +62,8 @@ export const PostPage = (props) => {
         </DivHr>
 
         <Comments>
-        <Author>Enviado por: {comment.creator.name}</Author>
-        <PostText>{comment.content}</PostText>
-        <DivLike>
-                    <button><img src={arrowUp} onClick={() => like(comment.id)}/></button>
-                    <p>{comment.likes}</p>
-                    <button><img src={arrowDown} onClick={() => dislike(comment.id)}/></button>
-                    <p>{comment.dislikes}</p>
-        </DivLike>
+          {comments && comments.map((comment) => {return <CardComment key={comment.id} comment={comment}/>;
+            })} 
         </Comments>
     </>
   )
